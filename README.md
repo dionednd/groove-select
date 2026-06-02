@@ -1,3 +1,5 @@
 ## Groove Select Module v0.0.1
 
-### Commissioned by Jerry
+### Every file goes into your external/mods folder.
+
+ Commissioned by Jerry
