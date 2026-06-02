@@ -1,0 +1,31 @@
+; groove_motif.def
+
+[Info]
+localcoord = 1280,720
+
+[Groove Select]
+p1.groove.title.text = Groove
+p1.groove.title.font = 3,0,1,210,210,255
+p1.groove.title.scale = 1.0, 1.0
+p1.groove.title.projection = orthographic
+p1.groove.title.offset = 290,140
+
+p1.groove.text.font = 3,0,0,255,210,239
+p1.groove.text.scale = 1.0, 1.0
+p1.groove.text.projection = orthographic
+p1.groove.text.offset = 390,190
+
+p2.groove.title.text = Groove
+p2.groove.title.font = 3,0,-1,210,210,255
+p2.groove.title.scale = 1.0, 1.0
+p2.groove.title.projection = orthographic
+p2.groove.title.offset = 990,140
+
+p2.groove.text.font = 3,0,0,255,210,239
+p2.groove.text.scale = 1.0, 1.0
+p2.groove.text.projection = orthographic
+p2.groove.text.offset = 890,190
+
+cursor.move   = 100, 0
+cursor.done   = 100, 1
+cursor.cancel = 100, 2
