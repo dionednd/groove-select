@@ -1,4 +1,4 @@
--- Groove Select Module v0.0.1a
+-- Groove Select Module v0.0.1b
 -- by dionednd
 
 -- Commissioned by Jerry
@@ -314,7 +314,7 @@ hook.add("start.f_selectLoading.member", "groove_map_set", function(v)
 	member = ((v.pn - side) / 2) + 1 -- calculate member from pn and side
 
 	if grooveSelect and grooveSelect.t_selected and grooveSelect.t_selected[side] and grooveSelect.t_selected[side][member] and grooveSelect.t_selected[side][member].map_name ~= nil then
-		v.maps[grooveSelect.t_selected[side][member].map_name] = tonumber(grooveSelect.t_selected[side][member].map_value or "0")
+		v.maps[string.lower(grooveSelect.t_selected[side][member].map_name)] = tonumber(grooveSelect.t_selected[side][member].map_value or "0")
 		printConsole(grooveSelect.t_selected[side][member].map_name .. " = " .. tonumber(grooveSelect.t_selected[side][member].map_value or "0"), false)
 	end
 end)
