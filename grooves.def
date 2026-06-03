@@ -3,8 +3,6 @@
 ; this is where all the default grooves go.
 ; this file can be overriden by a character by adding grooves to a character's .def file.
 
-; map names must be lowercase
-
 ; enabled is 1 by default so you don't need to have it when adding grooves.
 
 ; STANDARD FORMAT
