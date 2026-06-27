@@ -1,4 +1,5 @@
--- Groove Select Module v0.0.1b
+-- Groove Select Module v0.0.1c
+
 -- by dionednd
 
 -- Commissioned by Jerry
@@ -238,6 +239,25 @@ local function f_grooveMenu(side, cmd, player, member)
 	return GROOVE_STATE
 end
 
+local function f_freezePalette(side, player, member)
+	local st = start.p[side].t_selTemp[member]
+	if not st then return end
+	if st.currentIdx and st.validPals then
+		local maxIdx = #st.validPals + 1
+		if st.currentIdx == maxIdx then
+			local frozenPal = start.c[player].randPalPreview or start.f_randomPal(start.c[player].selRef, st.validPals)
+			st.pal = frozenPal
+			st.currentIdx = 1
+			for i, p in ipairs(st.validPals) do
+				if p == frozenPal then st.currentIdx = i; break end
+			end
+		end
+	end
+	start.c[player].randPalCnt     = nil
+	start.c[player].randPalPreview = nil
+	start.p[side].inPalMenu = false
+end
+
 local _origSelectMenu = start.f_selectMenu
 
 start.f_selectMenu = function(side, cmd, player, member, selectState)
@@ -268,6 +288,8 @@ start.f_selectMenu = function(side, cmd, player, member, selectState)
 		if not list or #list == 0 then
 			return newState, needUpdate
 		end
+
+		f_freezePalette(side, player, member)
 
 		local ms = grooveSelect.menu[side]
 		ms.active = true
