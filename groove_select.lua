@@ -1,4 +1,4 @@
--- Groove Select Module v0.0.1c
+-- Groove Select Module v0.0.2
 
 -- by dionednd
 
@@ -33,11 +33,19 @@ local function f_parseDef(path)
 		if line ~= "" then
 			local sec = line:match("^%[(.-)%]$")
 			if sec then
+				local leadTrimmed = sec:match("^%s*(.*)$")
+				local lower = leadTrimmed:lower()
+				local grooveName = nil
+				local _, kwEnd = lower:find("^groovedef%s+")
+				if kwEnd then
+					grooveName = leadTrimmed:sub(kwEnd + 1)
+				end
+
 				local display = trim(sec)
 				local key = display:lower()
 				count[key] = (count[key] or 0) + 1
 				current = count[key] == 1 and key or (key .. "_" .. count[key])
-				parsed[current] = { __name = display }
+				parsed[current] = { __name = display, __grooveName = grooveName }
 				table.insert(order, current)
 			elseif current then
 				local k, v = line:match("^([^=]+)=(.*)$")
@@ -49,27 +57,13 @@ local function f_parseDef(path)
 	return parsed, order
 end
 
-local RESERVED = { -- these section names will be ignored when parsing grooves.def and the character's .def file no matter what unless you use the [Groove Style] format
-	["info"]=true,
-	["files"]=true,
-	["map"]=true,
-	["palette keymap"]=true,
-	["arcade"]=true,
-	["palinfo"]=true, -- for JesusZilla's characters
-	["shaders"]=true, -- new ikemen go section for character .def files
-}
-
 local function f_extractGrooves(parsed, order)
 	local list, seen = {}, {}
 	for _, sec in ipairs(order) do
 		local s = parsed[sec]
-		local name = s.__name
-		local baseKey = sec:match("^(.-)_?%d*$") or sec
-		if RESERVED[baseKey] then goto skip end
-		if sec:match("^groove style") then
-			name = trim(s["name"] or "")
-			if name == "" then goto skip end
-		end
+
+		local name = s.__grooveName
+		if not name or name == "" then goto skip end
 		if s["enabled"] and tonumber(s["enabled"]) == 0 then goto skip end
 		if seen[name] then goto skip end
 		seen[name] = true
@@ -137,11 +131,8 @@ local function f_draw(side, member)
 	local chosen = ms.list[ms.cursorIdx]
 	local grooveName = chosen and chosen.name or ""
 
-	-- Title text ("SELECT GROOVE")
-
 	if pCfg.groovemenu and pCfg.groovemenu.title
 	 and pCfg.groovemenu.title.TextSpriteData then
-		-- motif has a pre-built TextSprite for this (optional, nicer)
 		textImgReset(pCfg.groovemenu.title.TextSpriteData)
 		textImgDraw(pCfg.groovemenu.title.TextSpriteData)
 	else
@@ -159,7 +150,6 @@ local function f_draw(side, member)
 		textImgDraw(txt)
 	end
 
-	-- Groove name text (currently highlighted)
 	if pCfg.groovemenu and pCfg.groovemenu.name
 	 and pCfg.groovemenu.name.TextSpriteData then
 		textImgReset(pCfg.groovemenu.name.TextSpriteData)
@@ -187,7 +177,6 @@ local function f_grooveMenu(side, cmd, player, member)
 	local total = #ms.list
 	local pSide = 'p' .. side
 
-	-- Key bindings reuse palmenu keys from select_info
 	local keyNext = motif.select_info[pSide].palmenu.next.key
 	local keyPrev = motif.select_info[pSide].palmenu.previous.key
 	local keyDone = motif.select_info[pSide].palmenu.done.key
@@ -210,15 +199,13 @@ local function f_grooveMenu(side, cmd, player, member)
 		}
 		sndPlay(motif.Snd, m.groove_select.cursor.done[1], m.groove_select.cursor.done[2])
 		ms.active = false
-		return 3 -- hand off to original selectState 3 (final commit)
+		return 3
 
 	elseif getInput(cmd, keyCancel) then
 		sndPlay(motif.Snd, m.groove_select.cursor.cancel[1], m.groove_select.cursor.cancel[2])
 		grooveSelect.t_selected[side][member] = nil
 		ms.active = false
 
-		-- Restore t_selTemp so the character portrait reverts to "hovering" state,
-		-- matching what f_palMenu does on its cancel path.
 		local st = start.p[side].t_selTemp[member]
 		if st then
 			local pn = 2 * (member - 1) + side
@@ -231,10 +218,9 @@ local function f_grooveMenu(side, cmd, player, member)
 			st.currentIdx = nil
 			st.validPals = nil
 		end
-		return 0 -- back to character select
+		return 0
 	end
 
-	-- still in groove menu: draw and stay
 	f_draw(side, member)
 	return GROOVE_STATE
 end
@@ -333,7 +319,7 @@ hook.add("start.f_selectLoading.member", "groove_map_set", function(v)
 	else -- if odd
 		side = 1
 	end
-	member = ((v.pn - side) / 2) + 1 -- calculate member from pn and side
+	member = ((v.pn - side) / 2) + 1
 
 	if grooveSelect and grooveSelect.t_selected and grooveSelect.t_selected[side] and grooveSelect.t_selected[side][member] and grooveSelect.t_selected[side][member].map_name ~= nil then
 		v.maps[string.lower(grooveSelect.t_selected[side][member].map_name)] = tonumber(grooveSelect.t_selected[side][member].map_value or "0")
