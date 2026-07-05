@@ -6,27 +6,14 @@
 ; enabled is 1 by default so you don't need to have it when adding grooves.
 
 ; STANDARD FORMAT
+; [Groovedef <Groove Name>]
 
-;[Groove Name]
+;[Groovedef Name]
 ;map_name = groove_style
 ;map_value = 1
 ;enabled = 0
 
-;[MARX-ISM]
+;[groovedef X-ISM]
 ;map_name = groove_style
 ;map_value = 2
-;enabled = 1
-
-; GROOVE STYLE FORMAT (old)
-
-;[Groove Style]
-;name = Groove Name
-;map_name = groove_style
-;map_value = 3
-;enabled = 1
-
-;[Groove Style]
-;name = TENDERN-ISM
-;map_name = groove_style
-;map_value = 3
 ;enabled = 1
