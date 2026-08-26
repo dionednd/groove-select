@@ -17,3 +17,20 @@
 ;map_name = groove_style
 ;map_value = 2
 ;enabled = 1
+
+; For toukachan6035's characters:
+
+[groovedef X-ISM]
+map_name = my_ism_selector_map
+map_value = 0
+enabled = 1
+
+[groovedef Z-ISM]
+map_name = my_ism_selector_map
+map_value = 1
+enabled = 1
+
+[groovedef V-ISM]
+map_name = my_ism_selector_map
+map_value = 2
+enabled = 1
