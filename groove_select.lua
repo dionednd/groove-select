@@ -1,4 +1,4 @@
--- Groove Select Module v0.0.2
+-- Groove Select Module v0.0.3
 
 -- by dionednd
 
@@ -49,7 +49,21 @@ local function f_parseDef(path)
 				table.insert(order, current)
 			elseif current then
 				local k, v = line:match("^([^=]+)=(.*)$")
-				if k then parsed[current][trim(k):lower()] = trim(v) end
+				if k then
+					k = trim(k):lower()
+					v = trim(v)
+
+					if k == "color" then
+						local color = {}
+						for value in v:gmatch("[^,]+") do
+							table.insert(color, tonumber(trim(value)))
+						end
+
+						parsed[current][k] = color
+					else
+						parsed[current][k] = v
+					end
+				end
 			end
 		end
 	end
@@ -71,6 +85,7 @@ local function f_extractGrooves(parsed, order)
 			name = name,
 			map_name = (s["map_name"] ~= "" and s["map_name"]) or nil,
 			map_value = (s["map_value"] ~= "" and s["map_value"]) or nil,
+			color = {s["color"] and s["color"][1] or -1, s["color"] and s["color"][2] or -1, s["color"] and s["color"][3] or -1, s["color"] and s["color"][4] or -1}
 		})
 		::skip::
 	end
@@ -121,7 +136,7 @@ local function f_getMotifP(t, pn, side)
 	return t["p" .. side]
 end
 
-local function f_draw(side, member)
+local function f_draw(side, member, item)
 	local ms = grooveSelect.menu[side]
 	local m = grooveSelect.motif
 	local pn = 2 * (member - 1) + side
@@ -163,7 +178,11 @@ local function f_draw(side, member)
 		textImgSetAlign(txt, m.groove_select['p' .. side].groove.text.font[3])
 		textImgSetText(txt, grooveName)
 		textImgSetPos(txt, m.groove_select['p' .. side].groove.text.offset[1], m.groove_select['p' .. side].groove.text.offset[2])
-		textImgSetColor(txt, m.groove_select['p' .. side].groove.text.font[4], m.groove_select['p' .. side].groove.text.font[5], m.groove_select['p' .. side].groove.text.font[6])
+		if item.color[1] > -1 or item.color[2] > -1 or item.color[3] > -1 or item.color[4] > -1 then
+			textImgSetColor(txt, item.color[1] > -1 and item.color[1] or m.groove_select['p' .. side].groove.text.font[4], item.color[2] > -1 and item.color[2] or m.groove_select['p' .. side].groove.text.font[5], item.color[3] > -1 and item.color[3] or m.groove_select['p' .. side].groove.text.font[6], item.color[4] > -1 and item.color[4] or 255)
+		else
+			textImgSetColor(txt, m.groove_select['p' .. side].groove.text.font[4], m.groove_select['p' .. side].groove.text.font[5], m.groove_select['p' .. side].groove.text.font[6])
+		end
 		textImgSetScale(txt, m.groove_select['p' .. side].groove.text.scale[1], m.groove_select['p' .. side].groove.text.scale[1])
 		textImgSetProjection(txt, m.groove_select['p' .. side].groove.text.projection)
 		textImgSetLayerno(txt, 2)
@@ -221,7 +240,7 @@ local function f_grooveMenu(side, cmd, player, member)
 		return 0
 	end
 
-	f_draw(side, member)
+	f_draw(side, member, ms.list[ms.cursorIdx])
 	return GROOVE_STATE
 end
 
@@ -247,45 +266,48 @@ end
 local _origSelectMenu = start.f_selectMenu
 
 start.f_selectMenu = function(side, cmd, player, member, selectState)
-
-	if selectState == GROOVE_STATE then
-		local ms = grooveSelect.menu[side]
-		if not ms or not ms.active then
-			return _origSelectMenu(side, cmd, player, member, 3)
+	if gameMode() ~= 'coloredit' then
+		if selectState == GROOVE_STATE then
+			local ms = grooveSelect.menu[side]
+			if not ms or not ms.active then
+				return _origSelectMenu(side, cmd, player, member, 3)
+			end
+			local nextState = f_grooveMenu(side, cmd, player, member)
+			return nextState, false
 		end
-		local nextState = f_grooveMenu(side, cmd, player, member)
-		return nextState, false
 	end
 
 	local newState, needUpdate = _origSelectMenu(side, cmd, player, member, selectState)
 
-	if newState == 3 and selectState ~= 3 then
-		local selRef = start.c[player].selRef
-		if selRef == nil then
-			return newState, needUpdate
+	if gameMode() ~= 'coloredit' then
+		if newState == 3 and selectState ~= 3 then
+			local selRef = start.c[player].selRef
+			if selRef == nil then
+				return newState, needUpdate
+			end
+	
+			local charData = start.f_getCharData(selRef)
+			if charData and charData.def then
+				f_loadCharGrooves(selRef, charData.def)
+			end
+	
+			local list = f_getGrooveList(selRef)
+			if not list or #list == 0 then
+				return newState, needUpdate
+			end
+
+			f_freezePalette(side, player, member)
+	
+			local ms = grooveSelect.menu[side]
+			ms.active = true
+			ms.member = member
+			ms.player = player
+			ms.charRef = selRef
+			ms.list = list
+			ms.cursorIdx = 1
+
+			return GROOVE_STATE, needUpdate
 		end
-
-		local charData = start.f_getCharData(selRef)
-		if charData and charData.def then
-			f_loadCharGrooves(selRef, charData.def)
-		end
-
-		local list = f_getGrooveList(selRef)
-		if not list or #list == 0 then
-			return newState, needUpdate
-		end
-
-		f_freezePalette(side, player, member)
-
-		local ms = grooveSelect.menu[side]
-		ms.active = true
-		ms.member = member
-		ms.player = player
-		ms.charRef = selRef
-		ms.list = list
-		ms.cursorIdx = 1
-
-		return GROOVE_STATE, needUpdate
 	end
 
 	return newState, needUpdate
