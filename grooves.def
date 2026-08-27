@@ -12,6 +12,7 @@
 ;map_name = groove_style
 ;map_value = 1
 ;enabled = 0
+;color = 255,255,255,255
 
 ;[groovedef X-ISM]
 ;map_name = groove_style
@@ -24,13 +25,16 @@
 map_name = my_ism_selector_map
 map_value = 0
 enabled = 1
+color = 255, 0, 0
 
 [groovedef Z-ISM]
 map_name = my_ism_selector_map
 map_value = 1
 enabled = 1
+color = 0, 255, 0
 
 [groovedef V-ISM]
 map_name = my_ism_selector_map
 map_value = 2
 enabled = 1
+color = 0, 0, 255
