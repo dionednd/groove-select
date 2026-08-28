@@ -329,22 +329,27 @@ end
 
 f_init()
 
-hook.add("start.f_selectLoading.member", "groove_map_set", function(v)
-	if v.maps == nil then
-		v.maps = {}
-	end
+hook.add("loop", "groove_map_set", function()
+	if gameMode() == "demo" then return end
+	if roundState() ~= 0 then return end
+	for side = 1, 2 do
+		for member, v in pairs(start.p[side].t_selected) do
+			if teamMode() == "turns" then
+				player(side)
+				if start.f_getCharData(v.ref).name == displayName() and start.f_getCharData(v.ref).author == authorName() then
+					pn = side
+				else
+					pn = 69420 -- for the memes
+				end
+			else
+				pn = 2 * (member - 1) + side
+			end
 
-	local side = 0
-	local member = 0
-	if (v.pn % 2) == 0 then -- if even
-		side = 2
-	else -- if odd
-		side = 1
-	end
-	member = ((v.pn - side) / 2) + 1
-
-	if grooveSelect and grooveSelect.t_selected and grooveSelect.t_selected[side] and grooveSelect.t_selected[side][member] and grooveSelect.t_selected[side][member].map_name ~= nil then
-		v.maps[string.lower(grooveSelect.t_selected[side][member].map_name)] = tonumber(grooveSelect.t_selected[side][member].map_value or "0")
-		printConsole(grooveSelect.t_selected[side][member].map_name .. " = " .. tonumber(grooveSelect.t_selected[side][member].map_value or "0"), false)
+			slot = teamMode() == "turns" and memberNo() or member
+			if player(pn) and map(string.lower(grooveSelect.t_selected[side][slot].map_name)) ~= tonumber(grooveSelect.t_selected[side][slot].map_value or "0") then
+				mapSet(string.lower(grooveSelect.t_selected[side][slot].map_name),  tonumber(grooveSelect.t_selected[side][slot].map_value or "0"))
+				printConsole(memberNo() .. " - " .. grooveSelect.t_selected[side][slot].map_name .. " = " .. tonumber(grooveSelect.t_selected[side][slot].map_value or "0"), false)
+			end
+		end
 	end
 end)
