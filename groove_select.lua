@@ -346,6 +346,7 @@ hook.add("loop", "groove_map_set", function()
 			end
 
 			slot = teamMode() == "turns" and memberNo() or member
+			slot = start.t_orderRemap[side][slot]
 			if player(pn) and map(string.lower(grooveSelect.t_selected[side][slot].map_name)) ~= tonumber(grooveSelect.t_selected[side][slot].map_value or "0") then
 				mapSet(string.lower(grooveSelect.t_selected[side][slot].map_name),  tonumber(grooveSelect.t_selected[side][slot].map_value or "0"))
 				printConsole(memberNo() .. " - " .. grooveSelect.t_selected[side][slot].map_name .. " = " .. tonumber(grooveSelect.t_selected[side][slot].map_value or "0"), false)
