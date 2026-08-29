@@ -1,4 +1,4 @@
--- Groove Select Module v0.0.3c
+-- Groove Select Module v0.0.3d
 
 -- by dionednd
 
@@ -346,7 +346,9 @@ hook.add("loop", "groove_map_set", function()
 			end
 
 			slot = teamMode() == "turns" and memberNo() or member
-			slot = start.t_orderRemap[side][slot]
+			if start.t_orderRemap and start.t_orderRemap[side] and start.t_orderRemap[side][slot] then
+				slot = start.t_orderRemap[side][slot]
+			end
 			local selected = grooveSelect.t_selected and grooveSelect.t_selected[side] and grooveSelect.t_selected[side][slot]
 
 			if player(pn) and selected and map(string.lower(selected.map_name or "")) ~= tonumber(selected.map_value or "0") then
