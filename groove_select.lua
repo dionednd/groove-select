@@ -1,4 +1,4 @@
--- Groove Select Module v0.0.3e
+-- Groove Select Module v0.0.3f
 
 -- by dionednd
 
@@ -13,12 +13,15 @@ grooveSelect.MOTIF_PATH = "external/mods/groove_motif.def"
 local GROOVE_STATE = 5
 
 grooveSelect.t_grooveDefs = {}
-
 grooveSelect.t_selected = { {}, {} }
-
 grooveSelect.menu = {}
 
 grooveSelect.motif = loadIni(grooveSelect.MOTIF_PATH, true, false)
+
+local t_textCache = {
+	[1] = { title = textImgNew(), name = textImgNew() },
+	[2] = { title = textImgNew(), name = textImgNew() }
+}
 
 local function trim(s)
 	return (s or ""):match("^%s*(.-)%s*$")
@@ -128,7 +131,6 @@ local function f_initMenuState(side)
 	grooveSelect.t_selected[side] = {}
 end
 
--- Resolve per-member motif tables (p3/p4/..), fallback to p1/p2 when undefined.
 local function f_getMotifP(t, pn, side)
 	if type(t) ~= "table" then return nil end
 	local p = t["p" .. pn]
@@ -140,51 +142,59 @@ local function f_draw(side, member, item)
 	local ms = grooveSelect.menu[side]
 	local m = grooveSelect.motif
 	local pn = 2 * (member - 1) + side
-	-- f_getMotifP is defined in start.lua, accessible globally
 	local pCfg = f_getMotifP(motif.select_info, pn, side)
 
 	local chosen = ms.list[ms.cursorIdx]
 	local grooveName = chosen and chosen.name or ""
+	local pKey = 'p' .. side
 
-	if pCfg.groovemenu and pCfg.groovemenu.title
-	 and pCfg.groovemenu.title.TextSpriteData then
+	-- Draw Title
+	if pCfg.groovemenu and pCfg.groovemenu.title and pCfg.groovemenu.title.TextSpriteData then
 		textImgReset(pCfg.groovemenu.title.TextSpriteData)
 		textImgDraw(pCfg.groovemenu.title.TextSpriteData)
 	else
-		local txt = textImgNew()
+		local txt = t_textCache[side].title
 		textImgSetLocalcoord(txt, m.info.localcoord[1], m.info.localcoord[2])
-		textImgSetFont(txt, motif.Fnt[m.groove_select['p' .. side].groove.title.font[1]] or motif.Fnt[1])
-		textImgSetBank(txt, m.groove_select['p' .. side].groove.title.font[2])
-		textImgSetAlign(txt, m.groove_select['p' .. side].groove.title.font[3])
-		textImgSetText(txt, m.groove_select['p' .. side].groove.title.text)
-		textImgSetPos(txt, m.groove_select['p' .. side].groove.title.offset[1], m.groove_select['p' .. side].groove.title.offset[2])
-		textImgSetColor(txt, m.groove_select['p' .. side].groove.title.font[4], m.groove_select['p' .. side].groove.title.font[5], m.groove_select['p' .. side].groove.title.font[6])
-		textImgSetScale(txt, m.groove_select['p' .. side].groove.title.scale[1], m.groove_select['p' .. side].groove.title.scale[1])
-		textImgSetProjection(txt, m.groove_select['p' .. side].groove.title.projection)
+		textImgSetFont(txt, motif.Fnt[m.groove_select[pKey].groove.title.font[1]] or motif.Fnt[1])
+		textImgSetBank(txt, m.groove_select[pKey].groove.title.font[2])
+		textImgSetAlign(txt, m.groove_select[pKey].groove.title.font[3])
+		textImgSetText(txt, m.groove_select[pKey].groove.title.text)
+		textImgSetPos(txt, m.groove_select[pKey].groove.title.offset[1], m.groove_select[pKey].groove.title.offset[2])
+		textImgSetColor(txt, m.groove_select[pKey].groove.title.font[4], m.groove_select[pKey].groove.title.font[5], m.groove_select[pKey].groove.title.font[6])
+		textImgSetScale(txt, m.groove_select[pKey].groove.title.scale[1], m.groove_select[pKey].groove.title.scale[1])
+		textImgSetProjection(txt, m.groove_select[pKey].groove.title.projection)
 		textImgSetLayerno(txt, 2)
 		textImgDraw(txt)
 	end
 
-	if pCfg.groovemenu and pCfg.groovemenu.name
-	 and pCfg.groovemenu.name.TextSpriteData then
+	-- Draw Groove Name
+	if pCfg.groovemenu and pCfg.groovemenu.name and pCfg.groovemenu.name.TextSpriteData then
 		textImgReset(pCfg.groovemenu.name.TextSpriteData)
 		textImgSetText(pCfg.groovemenu.name.TextSpriteData, grooveName)
 		textImgDraw(pCfg.groovemenu.name.TextSpriteData)
 	else
-		local txt = textImgNew()
+		local txt = t_textCache[side].name
 		textImgSetLocalcoord(txt, m.info.localcoord[1], m.info.localcoord[2])
-		textImgSetFont(txt, motif.Fnt[m.groove_select['p' .. side].groove.text.font[1]] or motif.Fnt[1])
-		textImgSetBank(txt, m.groove_select['p' .. side].groove.text.font[2])
-		textImgSetAlign(txt, m.groove_select['p' .. side].groove.text.font[3])
+		textImgSetFont(txt, motif.Fnt[m.groove_select[pKey].groove.text.font[1]] or motif.Fnt[1])
+		textImgSetBank(txt, m.groove_select[pKey].groove.text.font[2])
+		textImgSetAlign(txt, m.groove_select[pKey].groove.text.font[3])
 		textImgSetText(txt, grooveName)
-		textImgSetPos(txt, m.groove_select['p' .. side].groove.text.offset[1], m.groove_select['p' .. side].groove.text.offset[2])
+		textImgSetPos(txt, m.groove_select[pKey].groove.text.offset[1], m.groove_select[pKey].groove.text.offset[2])
+		
 		if item.color[1] > -1 or item.color[2] > -1 or item.color[3] > -1 or item.color[4] > -1 then
-			textImgSetColor(txt, item.color[1] > -1 and item.color[1] or m.groove_select['p' .. side].groove.text.font[4], item.color[2] > -1 and item.color[2] or m.groove_select['p' .. side].groove.text.font[5], item.color[3] > -1 and item.color[3] or m.groove_select['p' .. side].groove.text.font[6], item.color[4] > -1 and item.color[4] or 255)
+			textImgSetColor(
+				txt, 
+				item.color[1] > -1 and item.color[1] or m.groove_select[pKey].groove.text.font[4], 
+				item.color[2] > -1 and item.color[2] or m.groove_select[pKey].groove.text.font[5], 
+				item.color[3] > -1 and item.color[3] or m.groove_select[pKey].groove.text.font[6], 
+				item.color[4] > -1 and item.color[4] or 255
+			)
 		else
-			textImgSetColor(txt, m.groove_select['p' .. side].groove.text.font[4], m.groove_select['p' .. side].groove.text.font[5], m.groove_select['p' .. side].groove.text.font[6])
+			textImgSetColor(txt, m.groove_select[pKey].groove.text.font[4], m.groove_select[pKey].groove.text.font[5], m.groove_select[pKey].groove.text.font[6])
 		end
-		textImgSetScale(txt, m.groove_select['p' .. side].groove.text.scale[1], m.groove_select['p' .. side].groove.text.scale[1])
-		textImgSetProjection(txt, m.groove_select['p' .. side].groove.text.projection)
+		
+		textImgSetScale(txt, m.groove_select[pKey].groove.text.scale[1], m.groove_select[pKey].groove.text.scale[1])
+		textImgSetProjection(txt, m.groove_select[pKey].groove.text.projection)
 		textImgSetLayerno(txt, 2)
 		textImgDraw(txt)
 	end
@@ -329,30 +339,67 @@ end
 
 f_init()
 
+local gameMode = gameMode
+local teamMode = teamMode
+local player = player
+local memberNo = memberNo
+local displayName = displayName
+local authorName = authorName
+local map = map
+local mapSet = mapSet
+local printConsole = printConsole
+local string_lower = string.lower
+local tonumber = tonumber
+
 hook.add("loop", "groove_map_set", function()
 	if gameMode() == "demo" then return end
-	-- if roundState() >= 0 then return end
-	for side = 1, 2 do
-		for member, v in pairs(start.p[side].t_selected) do
-			if teamMode() == "turns" then
-				player(side)
-				if start.f_getCharData(v.ref).name == displayName() and start.f_getCharData(v.ref).author == authorName() then
-					pn = side
-				else
-					pn = 69420 -- for the memes
-				end
-			else
-				pn = 2 * (member - 1) + side
-			end
 
-			slot = teamMode() == "turns" and memberNo() or member
-			if start.t_orderRemap and start.t_orderRemap[side] and start.t_orderRemap[side][slot] then
-				slot = start.t_orderRemap[side][slot]
-			end
-			local selected = grooveSelect.t_selected and grooveSelect.t_selected[side] and grooveSelect.t_selected[side][slot]
-			if player(pn) and selected and map(string.lower(selected.map_name or "")) ~= tonumber(selected.map_value or "0") then
-				mapSet(string.lower(grooveSelect.t_selected[side][slot].map_name),  tonumber(grooveSelect.t_selected[side][slot].map_value or "0"))
-				printConsole(memberNo() .. " - " .. grooveSelect.t_selected[side][slot].map_name .. " = " .. tonumber(grooveSelect.t_selected[side][slot].map_value or "0"), false)
+	local pSel = start.p
+	local remap = start.t_orderRemap
+	local gSel = grooveSelect.t_selected
+	local isTurns = (teamMode() == "turns")
+
+	for side = 1, 2 do
+		local sideSelected = pSel[side] and pSel[side].t_selected
+		local gSide = gSel and gSel[side]
+
+		if sideSelected and gSide then
+			for member, v in pairs(sideSelected) do
+				local pn
+				if isTurns then
+					player(side)
+					local cData = start.f_getCharData(v.ref)
+					if cData and cData.name == displayName() and cData.author == authorName() then
+						pn = side
+					else
+						pn = 69420
+					end
+				else
+					pn = 2 * (member - 1) + side
+				end
+
+				local slot = isTurns and memberNo() or member
+				if remap and remap[side] and remap[side][slot] then
+					slot = remap[side][slot]
+				end
+
+				local selected = gSide[slot]
+				if selected and selected.map_name then
+					if player(pn) then
+						if not selected._parsed_map then
+							selected._parsed_map = string_lower(selected.map_name)
+							selected._parsed_val = tonumber(selected.map_value or "0") or 0
+						end
+
+						local lowerMap = selected._parsed_map
+						local targetVal = selected._parsed_val
+
+						if map(lowerMap) ~= targetVal then
+							mapSet(lowerMap, targetVal)
+							printConsole(memberNo() .. " - " .. lowerMap .. " = " .. targetVal, false)
+						end
+					end
+				end
 			end
 		end
 	end
